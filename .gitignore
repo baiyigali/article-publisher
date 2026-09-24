@@ -1,0 +1,7 @@
+config.py
+articles_status.json
+*.bak
+__pycache__/
+*.pyc
+.idea/
+.vscode/
