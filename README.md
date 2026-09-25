@@ -1,14 +1,6 @@
 # Article Publisher
 
-文章自动发布工具，将本地 Markdown 文章发布到自建网站，自动上传封面图到 Cloudflare R2 对象存储。
-
-## 功能
-
-- 扫描指定目录下的 MD 文件
-- 自动上传同名封面图（.jpg）到 Cloudflare R2
-- 自动替换 MD 里的图片链接为 R2 云端链接
-- 调用网站发布 API 发布文章
-- 发布状态跟踪，避免重复发布
+把本地 Markdown 文章发布到自建网站，封面自动上传到 Cloudflare R2 对象存储。一个脚本通吃，不区分内容类型。
 
 ## 快速开始
 
@@ -20,70 +12,37 @@ pip install requests boto3
 
 ### 2. 配置
 
-复制配置模板：
-
 ```bash
 cp config.template.py config.py
 ```
 
-然后编辑 `config.py`，填入你的配置：
+编辑 `config.py` 填入发布 API 与 R2 凭据（`config.py` 已在 .gitignore，不入库）。
 
-```python
-# 网站发布配置
-PUBLISH_API = "http://your-site.com/articles/api/create/"
-PUBLISH_TOKEN = "your-token-here"
+### 3. 发布
 
-# R2 对象存储配置
-R2_ENDPOINT = "https://xxxx.r2.cloudflarestorage.com"
-R2_ACCESS_KEY = "your-access-key-id"
-R2_SECRET_KEY = "your-secret-access-key"
-R2_BUCKET = "your-bucket-name"
-R2_PUBLIC_BASE = "https://pub-xxxx.r2.dev"
-R2_KEY_PREFIX = "covers"
-
-# 文章目录
-ARTICLES_DIR = "/path/to/your/articles"
-```
-
-### 3. 运行
+给哪些 md 就发哪些，**不扫目录、不记状态、不管历史**：
 
 ```bash
-python3 publish_with_r2.py
+python3 publish.py 篇1.md 篇2.md
 ```
+
+## 工作流程
+
+1. 读取传入的每个 `.md`
+2. 找同名封面（`.png` 优先，其次 `.jpg`/`.jpeg`，没有就跳过封面）
+3. 封面上传 R2，替换 md 里第一张图链接为 R2 地址
+4. POST `{title, content}` 到发布 API
 
 ## 文件结构
 
 ```
 article-publisher/
-├── publish_with_r2.py    # 主发布脚本
+├── publish.py            # 统一发布脚本
 ├── config.template.py    # 配置模板
-├── articles_status.json  # 发布状态（自动生成）
+├── config.py             # 本地真实配置（不入库）
+├── tests/                # pytest 测试
 └── README.md
 ```
-
-## 工作流程
-
-1. 扫描 `ARTICLES_DIR` 下的所有 `.md` 文件
-2. 读取状态文件，跳过已发布的文章
-3. 找到同名 `.jpg` 封面图，上传到 R2
-4. 替换 MD 里的本地图片链接为 R2 云端 URL
-5. 调用发布 API 发布文章
-6. 更新状态文件
-
-## 两路发布脚本
-
-| 脚本 | 用途 | 封面 | 目录 |
-| --- | --- | --- | --- |
-| `publish_with_r2.py` | 政策解读文章 | `.jpg` | `articles/政策解读` |
-| `publish_legal.py` | 法律热点文章 | `.png` | `articles/法律热点` |
-
-`publish_legal.py` 支持命令行直接指定 md 文件，只发本轮新写的那几篇，不扫目录：
-
-```bash
-python3 publish_legal.py 篇1.md 篇2.md
-```
-
-不带参数时退化为扫描整目录、按 `legal_status.json` 去重。
 
 ## 测试
 
@@ -91,10 +50,9 @@ python3 publish_legal.py 篇1.md 篇2.md
 python3 -m pytest tests/ -q
 ```
 
-R2 与发布 API 在测试中全部 mock，不真上传、不真发布。协作约定见 [AGENTS.md](AGENTS.md)（测试与接口只加不删不改、同功能改行为加版本）。
+R2 与发布 API 全部 mock，不真上传、不真发布。协作约定见 [AGENTS.md](AGENTS.md)。
 
-## 注意事项
+## 注意
 
-- 配置文件 `config.py` 不要提交到 git（已在 .gitignore 里）
-- 状态文件 `articles_status.json` / `legal_status.json` 记录已发布的文章，避免重复发布
-- 支持相对路径和绝对路径的图片链接替换
+- 支持相对路径和绝对路径的图片链接替换。
+- 封面 png/jpg/jpeg 都认，按扩展名设 ContentType。

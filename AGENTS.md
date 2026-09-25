@@ -4,10 +4,9 @@
 
 ## 项目是什么
 
-把本地 Markdown 文章发布到自建法律站 `falvshu.cn`：读 md → 同名封面上传 Cloudflare R2 → 替换 md 里封面链接为 R2 地址 → POST 到发布 API。
+把本地 Markdown 文章发布到自建法律站 `falvshu.cn`：读 md → 同名封面（png/jpg/jpeg 均可）上传 Cloudflare R2 → 替换 md 里封面链接为 R2 地址 → POST 到发布 API。
 
-- `publish_with_r2.py`：政策解读文章那一路（目录写死为 `articles/政策解读`，封面 `.jpg`）。
-- `publish_legal.py`：法律热点文章那一路（目录 `articles/法律热点`，封面 `.png`，支持命令行直接传 md 路径只发指定文件）。
+- `publish.py`：统一发布脚本。命令行传入哪些 md 就发哪些，不扫目录、不记状态、不管历史。
 - `config.template.py`：配置模板；真实 `config.py` / 凭据不入库。
 
 ## 铁律（只增不改，向后兼容）
