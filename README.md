@@ -70,8 +70,31 @@ article-publisher/
 5. 调用发布 API 发布文章
 6. 更新状态文件
 
+## 两路发布脚本
+
+| 脚本 | 用途 | 封面 | 目录 |
+| --- | --- | --- | --- |
+| `publish_with_r2.py` | 政策解读文章 | `.jpg` | `articles/政策解读` |
+| `publish_legal.py` | 法律热点文章 | `.png` | `articles/法律热点` |
+
+`publish_legal.py` 支持命令行直接指定 md 文件，只发本轮新写的那几篇，不扫目录：
+
+```bash
+python3 publish_legal.py 篇1.md 篇2.md
+```
+
+不带参数时退化为扫描整目录、按 `legal_status.json` 去重。
+
+## 测试
+
+```bash
+python3 -m pytest tests/ -q
+```
+
+R2 与发布 API 在测试中全部 mock，不真上传、不真发布。协作约定见 [AGENTS.md](AGENTS.md)（测试与接口只加不删不改、同功能改行为加版本）。
+
 ## 注意事项
 
 - 配置文件 `config.py` 不要提交到 git（已在 .gitignore 里）
-- 状态文件 `articles_status.json` 记录已发布的文章，避免重复发布
+- 状态文件 `articles_status.json` / `legal_status.json` 记录已发布的文章，避免重复发布
 - 支持相对路径和绝对路径的图片链接替换
