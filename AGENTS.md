@@ -32,6 +32,13 @@ python3 -m pytest tests/ -q
 - 测试里 R2（boto3）和发布 API（requests.post）全部 mock，**绝不真上传、真发布**。
 - 新增测试同样遵守：不联网、不写真实 R2/线上站。
 
+## 提交与推送（必须用户确认）
+
+- 改完代码后**不要自己 `git commit` / `git push`**。
+- 先把改了哪些文件、改了什么、测试是否通过，反馈给用户核对。
+- 等用户明确说"提交"再 `git commit`；等用户明确说"推送"再 `git push`。
+- 用户没发话，就停在工作区状态，不擅自入库、不擅自推远端。
+
 ## 凭据
 
 `PUBLISH_TOKEN`、R2 access/secret 等只存在于本地脚本或本地 config，**不要提交进 git**，也不要在输出里打印。
