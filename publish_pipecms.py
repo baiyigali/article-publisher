@@ -31,6 +31,11 @@ CONTENT_TYPE = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg"
 COVER_ORDER = (".png", ".jpg", ".jpeg")
 
 
+def extract_tags(raw):
+    last_line = raw.strip().splitlines()[-1] if raw.strip() else ""
+    return re.findall(r"#(\S+)", last_line)
+
+
 def find_cover(md_path):
     stem = md_path.rsplit(".", 1)[0]
     for ext in COVER_ORDER:
@@ -80,7 +85,25 @@ def publish_md(md_path, cfg, author):
             count=1,
         )
 
+    # 提取标签并批量获取 ID
+    tag_names = extract_tags(raw)
+    tag_ids = []
+    if tag_names:
+        bulk_url = cfg["api"].rsplit("/create/", 1)[0] + "/tags/bulk/"
+        tag_resp = requests.post(
+            bulk_url,
+            headers={"X-Internal-Token": cfg["token"], "Content-Type": "application/json"},
+            json={"names": tag_names}, timeout=30,
+        )
+        if tag_resp.status_code == 200:
+            tag_ids = [t["id"] for t in tag_resp.json()]
+            print(f"  标签: {tag_names} -> IDs {tag_ids}")
+        else:
+            print(f"  标签获取失败: {tag_resp.status_code} {tag_resp.text[:100]}")
+
     payload = {"title": title, "content": content, "author": author}
+    if tag_ids:
+        payload["tags"] = tag_ids
     headers = {"X-Internal-Token": cfg["token"], "Content-Type": "application/json"}
     resp = requests.post(cfg["api"], headers=headers, json=payload, timeout=60)
 
