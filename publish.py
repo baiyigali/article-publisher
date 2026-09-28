@@ -78,8 +78,13 @@ def publish_md(md_path):
             count=1,
         )
 
+    payload = {"title": title, "content": content, "author": AUTHOR}  # noqa: F405
+    # tags暂时不传，API需要标签ID而不是标签名称
+    # if tags:
+    #     payload["tags"] = tags
+
     headers = {"X-Internal-Token": PUBLISH_TOKEN, "Content-Type": "application/json"}  # noqa: F405
-    resp = requests.post(PUBLISH_API, headers=headers, json={"title": title, "content": content}, timeout=60)  # noqa: F405
+    resp = requests.post(PUBLISH_API, headers=headers, json=payload, timeout=60)  # noqa: F405
 
     if resp.status_code in (200, 201):
         try:
